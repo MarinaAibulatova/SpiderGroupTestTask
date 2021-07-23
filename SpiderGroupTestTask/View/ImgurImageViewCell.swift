@@ -12,4 +12,8 @@ class ImgurImageViewCell: UICollectionViewCell {
     @IBOutlet weak var imgurImageView: UIImageView!
     @IBOutlet weak var imageNameLabel: UILabel!
     
+    
+    override func prepareForReuse() {
+        imgurImageView.image = nil
+    }
 }
