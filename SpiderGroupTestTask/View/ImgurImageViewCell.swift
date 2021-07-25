@@ -14,6 +14,7 @@ class ImgurImageViewCell: UICollectionViewCell {
     
     
     override func prepareForReuse() {
+        imgurImageView.animationImages = nil
         imgurImageView.image = nil
     }
 }

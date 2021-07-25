@@ -11,7 +11,7 @@ import AlamofireImage
 import AVFoundation
 import AVKit
 
-class ImgurImagesViewControllerViewController: UIViewController, RequestManagerDelegate {
+class ImgurImagesViewControllerViewController: UIViewController, RequestImageManagerDelegate {
 
     //MARK: - Variables
     @IBOutlet weak var imgurImagesCollectionView: UICollectionView!
@@ -19,8 +19,9 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestManagerD
     
     private var testData: [ImageModel] = []
     private let imageCache = AutoPurgingImageCache()
-    private let requestManager = RequestManager()
-    
+    private let requestManager = RequestImageManager()
+    private var contentManager = ContentManager()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -28,7 +29,7 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestManagerD
         imgurImagesCollectionView.dataSource = self
         imgurImagesCollectionView.delegate = self
         imgurImagesCollectionView.prefetchDataSource = self
-        
+       
         requestManager.delegate = self
         requestManager.fetchImages()
         
@@ -43,42 +44,26 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestManagerD
     }
     
     func didFinishFithError(error: String) {
-        
+        print(error)
     }
-    
-    //MARK: - load video, images
-    private func loadVideo(from link: String, completion: @escaping (AVPlayerLayer?) -> ()) {
-        DispatchQueue.global().async {
-            if let url = URL(string: link) {
-                let player = AVPlayer(url: url)
-                let playerLayer = AVPlayerLayer(player: player)
-                
-                DispatchQueue.main.async {
-                    completion(playerLayer)
-                }
-            }
-                
-        }
-    }
-    
-    private func loadImage(from link: String, completion: @escaping (UIImage?) -> ()) {
-        DispatchQueue.global().async {
-            if let url = URL(string: link) {
-                guard let data = try? Data(contentsOf: url) else {
-                    return
-                }
-                let image = UIImage(data: data)
-                
-                DispatchQueue.main.async {
-                    completion(image)
-                }
+ 
+    //MARK: - Prepare
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showImgurImageView" {
+            let controller = segue.destination as? ImgurImageViewController
+            if let indexPath = imgurImagesCollectionView.indexPath(for: (sender as! ImgurImageViewCell)) {
+                controller?.imgurImage = testData[indexPath.section]
+                controller?.imageCache = self.imageCache
             }
         }
     }
+    
 }
 
 //MARK: - UICollectionViewDataSource, UICollectionViewDelegate
 extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
+    //MARK: - UICollectionViewDataSource
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return testData.count
     }
@@ -93,47 +78,51 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, U
        
         
         cell.backgroundColor = .white
+        cell.layer.borderWidth = 1
+        cell.layer.borderColor = UIColor.gray.cgColor
         
         cell.imageNameLabel.text = testData[indexPath.section].title == nil ? "no title" : testData[indexPath.section].title
 
-        return cell
-    }
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        guard let cell = cell as? ImgurImageViewCell else {
-            return
-        }
-        if (cell.layer.sublayers?.count)! > 1 {
-            cell.layer.sublayers?.removeLast()
-        }
-        
-        if testData[indexPath.section].type == ContentType.video {
-                self.loadVideo(from: testData[indexPath.section].link!) {(playerLayer) in
-                    guard let playerLayer = playerLayer else {return}
-                    
-                    playerLayer.frame = cell.bounds
-                    cell.layer.addSublayer(playerLayer)
-                }
-            
-        }else if testData[indexPath.section].type == ContentType.gif {
+        switch testData[indexPath.section].type! {
+        case ContentType.video:
+            contentManager.removePlayerFromCell()
+            let link = testData[indexPath.section].link!
+            print(indexPath.section)
+            if let player = contentManager.loadVideo(from: link){
+                
+                contentManager.playerLayer.frame = CGRect(x: 0, y: 0, width: cell.frame.width - 20, height: cell.frame.height - 20)
+                cell.layer.addSublayer(contentManager.playerLayer)
+            }
+        case ContentType.gif:
             cell.imgurImageView.animationImages = UIImageView.fromGif(urlString: testData[indexPath.section].link!)
             cell.imgurImageView.startAnimating()
-        }else {
+        default:
             if let cachedImage = imageCache.image(withIdentifier: testData[indexPath.section].id) {
                 cell.imgurImageView.image = cachedImage
             }else {
-                self.loadImage(from: testData[indexPath.section].link!) { [weak self] (image) in
+                contentManager.loadImage(from: testData[indexPath.section].link!) { [weak self] (image) in
                     guard let self = self, let image = image else {return}
-
+                    
                     cell.imgurImageView.image = image
                     self.imageCache.add(cell.imgurImageView.image!, withIdentifier: self.testData[indexPath.section].id)
                 }
             }
         }
+
+        return cell
     }
     
-    
+    //MARK: - UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
             return CGSize(width: view.frame.width - 20, height: view.frame.width - 20)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        if section == 0 {
+            return UIEdgeInsets.zero
+        }else {
+            return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        }
     }
     
 }
@@ -151,25 +140,3 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSourcePre
     
 }
 
-//MARK: - gifs
-extension UIImageView {
-    
-    static func fromGif(urlString: String) -> [UIImage]? {
-        let url = URL(string: urlString)
-        guard let gifData = try? Data(contentsOf: url!), let source = CGImageSourceCreateWithData(gifData as CFData, nil) else {
-            return nil
-        }
-        
-        var images = [UIImage]()
-        let imageCount = CGImageSourceGetCount(source)
-        
-        for i in 0 ..< imageCount {
-            if let image = CGImageSourceCreateImageAtIndex(source, i, nil) {
-                images.append(UIImage(cgImage: image))
-            }
-        }
-        
-        return images
-        
-    }
-}
