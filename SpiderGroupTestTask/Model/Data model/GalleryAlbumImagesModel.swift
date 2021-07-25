@@ -47,3 +47,11 @@ struct ImageModel: Codable {
     let type: ContentType?
 }
 
+struct GalleryAlbumCommentsModel: Codable {
+    let data: [Comment]
+}
+struct Comment: Codable {
+    let id: Int
+    let comment: String
+}
+
