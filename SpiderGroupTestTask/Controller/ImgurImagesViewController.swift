@@ -17,7 +17,7 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestImageMan
     @IBOutlet weak var imgurImagesCollectionView: UICollectionView!
     static let cellIdentifier: String = "ImageCell"
     
-    private var testData: [ImageModel] = []
+    private var imagesData: [ImageModel] = []
     private let imageCache = AutoPurgingImageCache()
     private let requestManager = RequestImageManager()
     private var contentManager = ContentManager()
@@ -37,7 +37,7 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestImageMan
     
     //MARK: - RequestManagerDelegate
     func didFinishFetchImages(images: [ImageModel]) {
-       self.testData += images
+       self.imagesData += images
         DispatchQueue.main.async {
             self.imgurImagesCollectionView.reloadData()
         }
@@ -52,7 +52,7 @@ class ImgurImagesViewControllerViewController: UIViewController, RequestImageMan
         if segue.identifier == "showImgurImageView" {
             let controller = segue.destination as? ImgurImageViewController
             if let indexPath = imgurImagesCollectionView.indexPath(for: (sender as! ImgurImageViewCell)) {
-                controller?.imgurImage = testData[indexPath.section]
+                controller?.imgurImage = imagesData[indexPath.section]
                 controller?.imageCache = self.imageCache
             }
         }
@@ -65,7 +65,7 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, U
     
     //MARK: - UICollectionViewDataSource
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return testData.count
+        return imagesData.count
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -81,12 +81,12 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, U
         cell.layer.borderWidth = 1
         cell.layer.borderColor = UIColor.gray.cgColor
         
-        cell.imageNameLabel.text = testData[indexPath.section].title == nil ? "no title" : testData[indexPath.section].title
+        cell.imageNameLabel.text = imagesData[indexPath.section].title == nil ? "no title" : imagesData[indexPath.section].title
 
-        switch testData[indexPath.section].type! {
+        switch imagesData[indexPath.section].type! {
         case ContentType.video:
             contentManager.removePlayerFromCell()
-            let link = testData[indexPath.section].link!
+            let link = imagesData[indexPath.section].link!
             print(indexPath.section)
             if let player = contentManager.loadVideo(from: link){
                 
@@ -94,17 +94,17 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, U
                 cell.layer.addSublayer(contentManager.playerLayer)
             }
         case ContentType.gif:
-            cell.imgurImageView.animationImages = UIImageView.fromGif(urlString: testData[indexPath.section].link!)
+            cell.imgurImageView.animationImages = UIImageView.fromGif(urlString: imagesData[indexPath.section].link!)
             cell.imgurImageView.startAnimating()
         default:
-            if let cachedImage = imageCache.image(withIdentifier: testData[indexPath.section].id) {
+            if let cachedImage = imageCache.image(withIdentifier: imagesData[indexPath.section].id) {
                 cell.imgurImageView.image = cachedImage
             }else {
-                contentManager.loadImage(from: testData[indexPath.section].link!) { [weak self] (image) in
+                contentManager.loadImage(from: imagesData[indexPath.section].link!) { [weak self] (image) in
                     guard let self = self, let image = image else {return}
                     
                     cell.imgurImageView.image = image
-                    self.imageCache.add(cell.imgurImageView.image!, withIdentifier: self.testData[indexPath.section].id)
+                    self.imageCache.add(cell.imgurImageView.image!, withIdentifier: self.imagesData[indexPath.section].id)
                 }
             }
         }
@@ -130,7 +130,7 @@ extension ImgurImagesViewControllerViewController: UICollectionViewDataSource, U
 //MARK: - UICollectionViewDataSourcePrefetching
 extension ImgurImagesViewControllerViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        if indexPaths[indexPaths.count-1].section == testData.count - 1 {
+        if indexPaths[indexPaths.count-1].section == imagesData.count - 1 {
            print(indexPaths[indexPaths.count-1].section)
             RequestManager.page += 1
             self.requestManager.fetchImages()
