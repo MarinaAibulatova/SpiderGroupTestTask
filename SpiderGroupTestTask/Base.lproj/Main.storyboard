@@ -122,12 +122,14 @@
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="o9T-F4-X61" userLabel="imageView">
                                         <rect key="frame" x="67" y="148.5" width="280" height="193.5"/>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uz4-Bg-9IS" userLabel="imageDescription">
-                                        <rect key="frame" x="186.5" y="342" width="41.5" height="20.5"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="ogv-sT-UTN" userLabel="imageTextViewDescription">
+                                        <rect key="frame" x="87" y="342" width="240" height="20.5"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                        <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                        <color key="textColor" systemColor="labelColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="ueC-NO-4wt" userLabel="CommentsTable">
                                         <rect key="frame" x="67" y="362.5" width="280" height="411.5"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -170,8 +172,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="rjd-HQ-Qk1"/>
                     <connections>
-                        <outlet property="imageDescription" destination="Uz4-Bg-9IS" id="mBC-IJ-xSE"/>
                         <outlet property="imageName" destination="Cfw-6V-jft" id="edu-fn-5Fc"/>
+                        <outlet property="imageTextViewDescription" destination="ogv-sT-UTN" id="5JU-UR-bvX"/>
                         <outlet property="imageView" destination="o9T-F4-X61" id="cAT-NE-Fd4"/>
                         <outlet property="tableComments" destination="ueC-NO-4wt" id="MlX-dh-UoZ"/>
                         <outlet property="videoView" destination="b9y-lX-wIs" id="8QW-yD-52l"/>

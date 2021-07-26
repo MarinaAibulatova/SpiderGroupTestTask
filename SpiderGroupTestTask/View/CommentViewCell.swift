@@ -12,8 +12,6 @@ class CommentViewCell: UITableViewCell {
     @IBOutlet weak var newLabel: UILabel!
     static let identifier = "commentCell"
     
-    //@IBOutlet weak var commentTextView: UITextView!
-    
     private let commentTextView: UITextView = {
         let textView = UITextView()
         textView.translatesAutoresizingMaskIntoConstraints = false

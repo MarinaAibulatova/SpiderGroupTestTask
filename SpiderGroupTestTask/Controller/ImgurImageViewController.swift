@@ -13,9 +13,9 @@ class ImgurImageViewController: UIViewController, RequestCommentManagerDelegate 
     //MARK: - UI
     @IBOutlet weak var imageName: UILabel!
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var imageDescription: UILabel!
     @IBOutlet weak var tableComments: UITableView!
     @IBOutlet weak var videoView: UIView!
+    @IBOutlet weak var imageTextViewDescription: UITextView!
     
     //MARK: - Variables
     private var comments: [Comment] = []
@@ -44,7 +44,8 @@ class ImgurImageViewController: UIViewController, RequestCommentManagerDelegate 
         imageView.translatesAutoresizingMaskIntoConstraints = false
         videoView.translatesAutoresizingMaskIntoConstraints = false
         tableComments.translatesAutoresizingMaskIntoConstraints = false
-        imageDescription.translatesAutoresizingMaskIntoConstraints = false
+        imageTextViewDescription.translatesAutoresizingMaskIntoConstraints = false
+        imageTextViewDescription.isScrollEnabled = false
         
         tableComments.delegate = self
         tableComments.dataSource = self
@@ -62,25 +63,23 @@ class ImgurImageViewController: UIViewController, RequestCommentManagerDelegate 
             videoView.addConstraint(NSLayoutConstraint(item: videoView!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .height, multiplier: 1, constant: view.frame.height / 4))
             constraints.append(videoView.leadingAnchor.constraint(equalTo: view.leadingAnchor))
             constraints.append(videoView.trailingAnchor.constraint(equalTo: view.trailingAnchor))
-            
-            constraints.append(imageDescription.topAnchor.constraint(equalTo: videoView.bottomAnchor))
+            constraints.append(imageTextViewDescription.topAnchor.constraint(equalTo: videoView.bottomAnchor))
         default:
             imageView.addConstraint(NSLayoutConstraint(item: imageView!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .height, multiplier: 1, constant: view.frame.height / 4))
-            constraints.append( imageDescription.topAnchor.constraint(equalTo: imageView.bottomAnchor))
+            constraints.append(imageTextViewDescription.topAnchor.constraint(equalTo: imageView.bottomAnchor))
         }
-        imageDescription.addConstraint(NSLayoutConstraint(item: imageDescription!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .height, multiplier: 1, constant: 30))
-        
+       
         constraints.append(tableComments.leadingAnchor.constraint(equalTo: view.leadingAnchor))
         constraints.append(tableComments.trailingAnchor.constraint(equalTo: view.trailingAnchor))
         constraints.append(tableComments.bottomAnchor.constraint(equalTo: view.bottomAnchor))
-        constraints.append(tableComments.topAnchor.constraint(equalTo: imageDescription.bottomAnchor))
+        constraints.append(tableComments.topAnchor.constraint(equalTo: imageTextViewDescription.bottomAnchor))
         NSLayoutConstraint.activate(constraints)
         
     }
     
     private func setValues(for imgurImage: ImageModel) {
         imageName.text = imgurImage.title == nil ? "no title": imgurImage.title
-        imageDescription.text = imgurImage.description == nil ? "no description": imgurImage.description
+        imageTextViewDescription.text = imgurImage.description == nil ? "no description": imgurImage.description
         
         if imgurImage.type == ContentType.video {
             if let player = contentManager.loadVideo(from: imgurImage.link!){
@@ -125,6 +124,7 @@ class ImgurImageViewController: UIViewController, RequestCommentManagerDelegate 
 }
 
 extension ImgurImageViewController: UITableViewDataSource, UITableViewDelegate {
+    //MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return comments.count
     }
@@ -135,6 +135,7 @@ extension ImgurImageViewController: UITableViewDataSource, UITableViewDelegate {
         return cell
     }
     
+    //MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return "The top comments!"
     }
